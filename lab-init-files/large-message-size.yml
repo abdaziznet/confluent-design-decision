@@ -1,0 +1,212 @@
+version: "3.5"
+services:
+  zk-1:
+    image: confluentinc/cp-zookeeper:7.1.1-1-ubi8
+    hostname: zk-1
+    container_name: zk-1
+    ports:
+      - "12181:12181"
+    volumes:
+      - data-zk-log-1:/var/lib/zookeeper/log
+      - data-zk-data-1:/var/lib/zookeeper/data
+    networks:
+      - confluent
+    environment:
+      - ZOOKEEPER_SERVER_ID=1
+      - ZOOKEEPER_CLIENT_PORT=12181
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=5
+      - ZOOKEEPER_SYNC_LIMIT=2
+      - ZOOKEEPER_SERVERS=zk-1:2888:3888;zk-2:2888:3888;zk-3:2888:3888
+  
+  zk-2:
+    image: confluentinc/cp-zookeeper:7.1.1-1-ubi8
+    hostname: zk-2
+    container_name: zk-2
+    ports:
+      - "22181:22181"
+    volumes:
+      - data-zk-log-2:/var/lib/zookeeper/log
+      - data-zk-data-2:/var/lib/zookeeper/data
+    networks:
+      - confluent
+    environment:
+      - ZOOKEEPER_SERVER_ID=2
+      - ZOOKEEPER_CLIENT_PORT=22181
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=5
+      - ZOOKEEPER_SYNC_LIMIT=2
+      - ZOOKEEPER_SERVERS=zk-1:2888:3888;zk-2:2888:3888;zk-3:2888:3888
+  
+  zk-3:
+    image: confluentinc/cp-zookeeper:7.1.1-1-ubi8
+    hostname: zk-3
+    container_name: zk-3
+    ports:
+      - "32181:32181"
+    volumes:
+      - data-zk-log-3:/var/lib/zookeeper/log
+      - data-zk-data-3:/var/lib/zookeeper/data
+    networks:
+      - confluent
+    environment:
+      - ZOOKEEPER_SERVER_ID=3
+      - ZOOKEEPER_CLIENT_PORT=32181
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=5
+      - ZOOKEEPER_SYNC_LIMIT=2
+      - ZOOKEEPER_SERVERS=zk-1:2888:3888;zk-2:2888:3888;zk-3:2888:3888
+
+  zk-cc:
+    image: confluentinc/cp-zookeeper:7.1.1-1-ubi8
+    hostname: zk-cc
+    container_name: zk-cc
+    ports:
+      - "52181:52181"
+    volumes:
+      - data-zk-log-cc:/var/lib/zookeeper/log
+      - data-zk-data-cc:/var/lib/zookeeper/data
+    networks:
+      - confluent
+    environment:
+      - ZOOKEEPER_SERVER_ID=5
+      - ZOOKEEPER_CLIENT_PORT=52181
+      - ZOOKEEPER_TICK_TIME=2000
+      - ZOOKEEPER_INIT_LIMIT=5
+      - ZOOKEEPER_SYNC_LIMIT=2
+      - ZOOKEEPER_SERVERS=zk-cc:2888:3888
+
+  kafka-1:
+    image: confluentinc/cp-server:7.1.1-1-ubi8
+    hostname: kafka-1
+    container_name: kafka-1
+    ports:
+      - "18082:18082"
+      - "19092:19092"
+    networks:
+      - confluent
+    volumes:
+      - data-kafka-1:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 101
+      KAFKA_ZOOKEEPER_CONNECT: zk-1:12181,zk-2:22181,zk-3:32181
+      KAFKA_LISTENERS: DOCKER://kafka-1:9092,HOST://kafka-1:19092
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka-1:9092,HOST://kafka-1:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_CONFLUENT_HTTP_SERVER_LISTENERS: http://0.0.0.0:18082
+      KAFKA_LOG_RETENTION_HOURS: 1
+      KAFKA_LOG_SEGMENT_BYTES: 268435456
+      KAFKA_LOG_RETENTION_BYTES: 536870912
+      KAFKA_METRIC_REPORTERS: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: "kafka-cc:9092"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "false"
+
+  kafka-2:
+    image: confluentinc/cp-server:7.1.1-1-ubi8
+    hostname: kafka-2
+    container_name: kafka-2
+    ports:
+      - "29092:29092"
+    networks:
+      - confluent
+    volumes:
+      - data-kafka-2:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 102
+      KAFKA_ZOOKEEPER_CONNECT: zk-1:12181,zk-2:22181,zk-3:32181
+      KAFKA_LISTENERS: DOCKER://kafka-2:9092,HOST://kafka-2:29092
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka-2:9092,HOST://kafka-2:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_LOG_RETENTION_HOURS: 1
+      KAFKA_LOG_SEGMENT_BYTES: 268435456
+      KAFKA_LOG_RETENTION_BYTES: 536870912
+      KAFKA_METRIC_REPORTERS: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: "kafka-cc:9092"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "false"
+
+  kafka-3:
+    image: confluentinc/cp-server:7.1.1-1-ubi8
+    hostname: kafka-3
+    container_name: kafka-3
+    ports:
+      - "39092:39092"
+    networks:
+      - confluent
+    volumes:
+      - data-kafka-3:/var/lib/kafka/data
+    environment:
+      KAFKA_BROKER_ID: 103
+      KAFKA_ZOOKEEPER_CONNECT: zk-1:12181,zk-2:22181,zk-3:32181
+      KAFKA_LISTENERS: DOCKER://kafka-3:9092,HOST://kafka-3:39092
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka-3:9092,HOST://kafka-3:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_LOG_RETENTION_HOURS: 1
+      KAFKA_LOG_SEGMENT_BYTES: 268435456
+      KAFKA_LOG_RETENTION_BYTES: 536870912
+      KAFKA_METRIC_REPORTERS: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: "kafka-cc:9092"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "false"
+
+  kafka-cc:
+    image: confluentinc/cp-server:7.1.1-1-ubi8
+    hostname: kafka-cc
+    container_name: kafka-cc
+    ports:
+      - "59092:59092"
+    networks:
+      - confluent
+    environment:
+      KAFKA_BROKER_ID: 105
+      KAFKA_ZOOKEEPER_CONNECT: zk-cc:52181
+      KAFKA_LISTENERS: DOCKER://kafka-cc:9092,HOST://kafka-cc:59092
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka-cc:9092,HOST://kafka-cc:59092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      KAFKA_METRIC_REPORTERS: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: "kafka-cc:9092"
+      KAFKA_CONFLUENT_BALANCER_ENABLE: "false"
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.1.1-1-ubi8
+    hostname: control-center
+    container_name: control-center
+    networks:
+      - confluent
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka-cc:9092
+      CONTROL_CENTER_KAFKA_CONTROLCENTER_BOOTSTRAP_SERVERS: kafka-cc:9092
+      CONTROL_CENTER_KAFKA_PRODUCTION_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_REPLICATION: 1
+      CONTROL_CENTER_COMMAND_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_METRICS_TOPIC_REPLICATION: 1
+      CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 1
+      CONTROL_CENTER_UI_AUTOUPDATE_ENABLE: "false"
+
+volumes:
+  data-zk-log-1:
+  data-zk-data-1:
+  data-zk-log-2:
+  data-zk-data-2:
+  data-zk-log-3:
+  data-zk-data-3:
+  data-zk-log-cc:
+  data-zk-data-cc:
+  data-kafka-1:
+  data-kafka-2:
+  data-kafka-3:
+
+networks:
+  confluent:
